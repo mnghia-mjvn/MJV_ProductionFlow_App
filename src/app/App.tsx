@@ -2629,16 +2629,21 @@ function JobDetail({
 
                   <div>
                     <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Product / Part Name</p>
-                    <input
-                      list="product-list"
-                      value={job.productName}
-                      onChange={e => updateField("productName", e.target.value)}
-                      placeholder="e.g. RTG Crane Upper Beam"
-                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
-                    />
-                    <datalist id="product-list">
-                      {productOptions.map(p => <option key={p} value={p} />)}
-                    </datalist>
+                    <div className="relative">
+                      <select
+                        value={job.productName}
+                        onChange={e => updateField("productName", e.target.value)}
+                        className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none appearance-none"
+                      >
+                        <option value="">Select product…</option>
+                        {productOptions.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-0 h-10 flex items-center">
+                        <ChevronDown size={16} className="text-[#8F96A3]" />
+                      </div>
+                    </div>
                   </div>
 
                   <div>
