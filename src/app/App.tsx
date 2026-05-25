@@ -1925,7 +1925,7 @@ function QCInspectionForm({
                 { label: "Part Number", value: task.partSN },
                 { label: "Job Number", value: task.jobNo },
                 { label: "Name / Tên", value: task.productName },
-                { label: "Project No.", value: "PRJ-2024-RTG-12" },
+                { label: "Project Number", value: "PRJ-2024-RTG-12" },
                 { label: "Date / Ngày SX", value: "18/12/2024" },
                 { label: "Shift / Ca SX", value: "Day Shift" },
               ].map(({ label, value }) => (
@@ -2564,9 +2564,9 @@ function JobDetail({
                 <div className="flex flex-col gap-3">
                   {[
                     { label: "Job Number",   field: "jobNo",       placeholder: "JOB-RTG-2024-XXX" },
-                    { label: "Project No.",  field: "projectNo",   placeholder: "PRJ-2024-XXX" },
+                    { label: "Project Number",  field: "projectNo",   placeholder: "PRJ-2024-XXX" },
                     { label: "Product Name", field: "productName", placeholder: "e.g. RTG Crane Upper Beam" },
-                    { label: "Part S/N",     field: "partSN",      placeholder: "e.g. RTG-051-UB-001" },
+                    { label: "Part Number",     field: "partSN",      placeholder: "e.g. RTG-051-UB-001" },
                     { label: "Customer",     field: "customer",    placeholder: "Customer company name" },
                     { label: "Start Date",   field: "startDate",   placeholder: "DD MMM YYYY" },
                     { label: "Due Date",     field: "dueDate",     placeholder: "DD MMM YYYY" },
