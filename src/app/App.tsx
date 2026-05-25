@@ -443,24 +443,46 @@ function StatCard({ value, label, color }: { value: number | string; label: stri
 }
 
 function DocRow({ icon, name, sub }: { icon: React.ReactNode; name: string; sub: string }) {
+  const [showViewer, setShowViewer] = useState(false);
+
   return (
-    <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-black/5">
-      <div className="w-9 h-9 rounded-xl bg-[#EAF3FB] flex items-center justify-center flex-shrink-0">
-        {icon}
+    <>
+      <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-black/5">
+        <div className="w-9 h-9 rounded-xl bg-[#EAF3FB] flex items-center justify-center flex-shrink-0">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-semibold text-[#0F0F0F] truncate">{name}</p>
+          <p className="text-[11px] text-[#8F96A3]">{sub}</p>
+        </div>
+        <div className="flex gap-1.5">
+          <button onClick={() => setShowViewer(true)} className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center border border-black/5">
+            <Eye size={12} className="text-[#8F96A3]" />
+          </button>
+          <button className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center border border-black/5">
+            <Download size={12} className="text-[#8F96A3]" />
+          </button>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-[#0F0F0F] truncate">{name}</p>
-        <p className="text-[11px] text-[#8F96A3]">{sub}</p>
-      </div>
-      <div className="flex gap-1.5">
-        <button className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center border border-black/5">
-          <Eye size={12} className="text-[#8F96A3]" />
-        </button>
-        <button className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center border border-black/5">
-          <Download size={12} className="text-[#8F96A3]" />
-        </button>
-      </div>
-    </div>
+
+      {showViewer && (
+        <div className="absolute inset-0 z-[90] bg-black/70 flex items-center justify-center">
+          <div className="bg-white rounded-2xl w-[90%] max-w-3xl p-4 relative">
+            <button onClick={() => setShowViewer(false)} className="absolute top-3 right-3 w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+              <XIcon size={16} />
+            </button>
+            <p className="font-bold text-[14px] mb-3">{name}</p>
+            <div className="flex gap-4">
+              <img src={imgBg} alt="sample" className="w-1/2 object-contain rounded" />
+              <div className="flex-1">
+                <p className="text-[13px] text-[#8F96A3] mb-2">{sub}</p>
+                <p className="text-[13px]">This is a sample preview of the drawing / document. Replace with real file preview as needed.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -2502,6 +2524,24 @@ function JobDetail({
   const uniqueWorkers = Array.from(new Set(job.tasks.map(t => t.worker).filter(Boolean)));
   const uniqueQCs    = Array.from(new Set(job.tasks.map(t => t.qc).filter(Boolean)));
 
+  // Options for searchable dropdowns
+  const projectOptions = Array.from(new Set(JOBS_INIT.map(j => j.projectNo))).filter(Boolean);
+  const productOptions = Array.from(new Set(JOBS_INIT.map(j => j.productName))).filter(Boolean);
+  const partOptions = Array.from(new Set(JOBS_INIT.map(j => j.partSN))).filter(Boolean);
+
+  // Date helpers: convert between display format (e.g. "06 Jan 2025") and ISO (yyyy-mm-dd)
+  function displayToISO(display: string) {
+    const d = new Date(display);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  }
+  function isoToDisplay(iso: string) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
   return (
     <>
       <div className="flex flex-col h-full">
@@ -2562,26 +2602,89 @@ function JobDetail({
                 style={{ boxShadow: "0 4px 16px rgba(89,93,176,0.06)" }}>
                 <p className="text-[11px] text-[#8F96A3] font-bold uppercase tracking-wide mb-3">Job Information</p>
                 <div className="flex flex-col gap-3">
-                  {[
-                    { label: "Job Number",   field: "jobNo",       placeholder: "JOB-RTG-2024-XXX" },
-                    { label: "Project Number",  field: "projectNo",   placeholder: "PRJ-2024-XXX" },
-                    { label: "Product Name", field: "productName", placeholder: "e.g. RTG Crane Upper Beam" },
-                    { label: "Part Number",     field: "partSN",      placeholder: "e.g. RTG-051-UB-001" },
-                    { label: "Customer",     field: "customer",    placeholder: "Customer company name" },
-                    { label: "Start Date",   field: "startDate",   placeholder: "DD MMM YYYY" },
-                    { label: "Due Date",     field: "dueDate",     placeholder: "DD MMM YYYY" },
-                  ].map(({ label, field, placeholder }) => (
-                    <div key={field}>
-                      <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">{label}</p>
-                      <input
-                        type="text"
-                        value={(job as Record<string, unknown>)[field] as string}
-                        onChange={e => updateField(field as keyof Job, e.target.value)}
-                        placeholder={placeholder}
-                        className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
-                      />
-                    </div>
-                  ))}
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Job Number</p>
+                    <input
+                      type="text"
+                      value={job.jobNo}
+                      onChange={e => updateField("jobNo", e.target.value)}
+                      placeholder="JOB-RTG-2024-XXX"
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Project Number</p>
+                    <input
+                      list="project-list"
+                      value={job.projectNo}
+                      onChange={e => updateField("projectNo", e.target.value)}
+                      placeholder="PRJ-2024-XXX"
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
+                    />
+                    <datalist id="project-list">
+                      {projectOptions.map(p => <option key={p} value={p} />)}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Product / Part Name</p>
+                    <input
+                      list="product-list"
+                      value={job.productName}
+                      onChange={e => updateField("productName", e.target.value)}
+                      placeholder="e.g. RTG Crane Upper Beam"
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
+                    />
+                    <datalist id="product-list">
+                      {productOptions.map(p => <option key={p} value={p} />)}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Product / Part Serial</p>
+                    <input
+                      list="part-list"
+                      value={job.partSN}
+                      onChange={e => updateField("partSN", e.target.value)}
+                      placeholder="e.g. RTG-051-UB-001"
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
+                    />
+                    <datalist id="part-list">
+                      {partOptions.map(p => <option key={p} value={p} />)}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Customer</p>
+                    <input
+                      type="text"
+                      value={job.customer}
+                      onChange={e => updateField("customer", e.target.value)}
+                      placeholder="Customer company name"
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none placeholder:text-gray-300 placeholder:font-normal"
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Start Date</p>
+                    <input
+                      type="date"
+                      value={displayToISO(job.startDate)}
+                      onChange={e => updateField("startDate", isoToDisplay(e.target.value))}
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Due Date</p>
+                    <input
+                      type="date"
+                      value={displayToISO(job.dueDate)}
+                      onChange={e => updateField("dueDate", isoToDisplay(e.target.value))}
+                      className="w-full h-10 bg-[#F5F8FC] border border-black/5 rounded-xl px-3 text-[13px] font-semibold text-[#0F0F0F] outline-none"
+                    />
+                  </div>
                   <div>
                     <p className="text-[10px] text-[#8F96A3] font-bold uppercase tracking-wide mb-1">Notes</p>
                     <textarea
